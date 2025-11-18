@@ -3,6 +3,13 @@
 
 #include "render.h"
 
+/*
+    TODO:
+        ·   Añadir soporte para custom arguments (shaders, dimensiones, fps, fotogramas)
+        ·   Que no renderize vídeo si hay 1 o menos frames
+        ·   Que el shader se envíe del maestro a los esclavos
+*/
+
 int main(int argc, char** argv)
 {
     int id, num;
