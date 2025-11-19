@@ -1,6 +1,6 @@
 np?=4
+ARGS?=sdf_0 1920 1080 30 30
 OUTPUT=renderizador
-
 CC=mpicc
 CFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11  -g
 LDFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11 -g
@@ -8,7 +8,7 @@ LDFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11 -g
 SRC=$(wildcard *.c)
 OBJ=$(SRC:.c=.o)
 
-all: $(OUTPUT)
+default: $(OUTPUT)
 
 $(OUTPUT): $(OBJ)
 	$(CC) $(OBJ) -o $(OUTPUT) $(LDFLAGS)
@@ -18,6 +18,8 @@ $(OUTPUT): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(OUTPUT)
+	rm *.png
+	rm *.mp4
 
 run: $(OUTPUT)
-	mpirun -np $(np) $(OUTPUT)
+	mpirun -np $(np) $(OUTPUT) $(ARGS)

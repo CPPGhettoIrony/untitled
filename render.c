@@ -11,44 +11,28 @@ int numPlaces (int n) {
     return floor (log10 (abs (n))) + 1;
 }
 
-void sendImage(Image* img, int id, int num, int width, int height) {
-
-    const int channels = 4;  // RGBA
-    int sliceWidth = width / num;  // Width of this process's slice
-    int bytesPerRow = sliceWidth * channels;  // Bytes per row for this slice
-    
-    unsigned char* data = (unsigned char*)img->data;
-    
-    
-
-    // The image should be sliceWidth x height, not full width
-    // Send each row of the slice
-    for(int row = 0; row < height; row++) {
-        int offset = row * bytesPerRow;  // Offset within the slice image
-        MPI_Send(data + offset, bytesPerRow, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
-    }
-}
-
-void recvImage(Image* img, int num, int width, int height) {
+void recvImage(Image* img, unsigned char* tmp, int num, int width, int height) {
 
     const int channels = 4;  // RGBA
     int sliceWidth = width / num;
+
     int bytesPerRow = sliceWidth * channels;
     int fullRowBytes = width * channels;
     
-    unsigned char* data = (unsigned char*)img->data;
     MPI_Status status;
     
     // Receive slices from each worker process
-    for(int row = 0; row < height; row++) {
-        for(int id = 1; id < num; id++) {
-            int sliceOffset = row * fullRowBytes + (id * sliceWidth * channels);
-            MPI_Recv(data + sliceOffset, bytesPerRow, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD, &status);
+    for(int id = 1; id < num; id++) {
+        MPI_Recv(tmp, (width/num) * height * 4, MPI_UNSIGNED_CHAR, id, 0, MPI_COMM_WORLD, &status);
+        for(int row = 0; row < height; row++) {
+            int sliceOffset = row * fullRowBytes + (id * bytesPerRow);
+            memcpy(img->data + sliceOffset, tmp + row * bytesPerRow, bytesPerRow);
         }
     }
+
 }
 
-void slave(int id, int num, int width, int height, int fps, int frames) {
+void render(int id, int num, const char* name, int width, int height, int fps, int frames) {
     
     float time = .0;
     
@@ -80,11 +64,11 @@ void slave(int id, int num, int width, int height, int fps, int frames) {
         BeginTextureMode(display);
 
             BeginShaderMode(shader);
-                // Draw the white texture - this will have proper 0-1 texture coordinates
+                
                 DrawTexturePro(
                     whiteTex,
-                    (Rectangle){width/num*id, 0, width/num, height},  // Source: right half
-                    (Rectangle){0, 0, width/num, height},  // Dest: right half
+                    (Rectangle){width/num*id, 0, width/num, height}, 
+                    (Rectangle){0, 0, width/num, height},  
                     (Vector2){0, 0},
                     0.0f,
                     WHITE
@@ -99,22 +83,28 @@ void slave(int id, int num, int width, int height, int fps, int frames) {
 
         frame[i] = LoadImageFromTexture(display.texture);
 
-        time += (float)frames/(float)fps;
+        time += 1./(float)fps;
 
     }
 
-    if(id == 0)
+    if(id == 0) {
+
+        unsigned char* tmp_buffer = malloc((width/num) * height * 4);
+
         for(int i = 0; i < frames; ++i) {
-            recvImage(&frame[i], num, width, height);
+            recvImage(&frame[i], tmp_buffer, num, width, height);
             ImageFlipVertical(&frame[i]);
 
             char str[64];
-            sprintf(str, "output_%0*d.png", digits, i);
+            sprintf(str, "%s_%0*d.png", name, digits, i);
             ExportImage(frame[i], str);
         }
-    else 
+
+        free(tmp_buffer);
+
+    } else 
         for(int i = 0; i < frames; ++i)
-            sendImage(&frame[i], id, num, width, height); 
+            MPI_Send(frame[i].data, (width/num) * height * 4, MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
 
     for(int i = 0; i < frames; ++i)
         UnloadImage(frame[i]);
@@ -125,9 +115,10 @@ void slave(int id, int num, int width, int height, int fps, int frames) {
     CloseWindow();
 }
 
-void get_video(int fps, int frames) {
-    char command[64];
-    sprintf(command, "ffmpeg -framerate %i -i output_%%0%dd.png -c:v libx264 -pix_fmt yuv420p output.mp4", fps, numPlaces(frames));
+void get_video(const char* name, int fps, int frames) {
+    char command[256], clean[32];
+    sprintf(command, "ffmpeg -framerate %i -i %s_%%0%dd.png -c:v libx264 -pix_fmt yuv420p %s.mp4", fps, name, numPlaces(frames), name);
     printf("Converting to video with command:\n\t%s\n", command);
     system(command);
+    system("rm *.png");
 }

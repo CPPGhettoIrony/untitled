@@ -231,19 +231,19 @@ Hit cartoon(vec3 col, vec3 shn, float thickness, Hit h, vec2 uv) {
 
     h.col = mix(col, shn, fresnel(h));
     h.lco = h.col *.3;
-    h.lth = 0.15;
+    h.lth = 0;
     h.ref = 0.3;
     h.shn = 64;
     h.spc = 1;
 
-    //h.normal = BUMP(bump, uv, h.normal, 0.002);
+    h.normal = BUMP(bump, uv, h.normal, 0.002);
 
     return h;
 
 }
 
-Hit A(Hit h, vec2 uv) {return cartoon(vec3(1.0, 0.3, 0.), vec3(1.0, 1.0, 0.05), 0.3, h, uv);}
-Hit B(Hit h, vec2 uv) {return cartoon(vec3(0., 1.0, 0.3), vec3(0.05, 1.0, 1.0), 0.1, h, uv);}
+Hit A(Hit h, vec2 uv) {return cartoon(vec3(1.0, 0.3, 0.), vec3(1.0, 1.0, 0.05), 0, h, uv);}
+Hit B(Hit h, vec2 uv) {return cartoon(vec3(0., 1.0, 0.3), vec3(0.05, 1.0, 1.0), 0, h, uv);}
 
 Hit floor(Hit h, vec2 uv) {
 
@@ -843,12 +843,10 @@ Hit Operator(vec3 p);
 Hit scene(vec3 p);
 
 Hit Operator(vec3 p){
-	
-    float t = u_time*0.001;
     Hit sph, oct;
 
-	sph = sphere(p, vec3(sin(t), 1, 0.0), 0.5,  1u);
-	oct = octahedron(p, vec3(-sin(t), 1, 0.0), rotationFromEuler(vec3(cos(t), sin(t), -cos(t))), 0.5, 2u);
+	sph = sphere(p, vec3(sin(u_time), 1, 0.0), 0.5,  1u);
+	oct = octahedron(p, vec3(-sin(u_time), 1, 0.0), rotationFromEuler(vec3(cos(u_time), sin(u_time), -cos(u_time))), 0.5, 2u);
 	return union_(sph, oct, 0.5);
 }
 
