@@ -4,12 +4,6 @@
 
 #include "render.h"
 
-/*
-    TODO:
-        ·   Que no renderize vídeo si hay 1 o menos frames
-        ·   Que el shader se envíe del maestro a los esclavos
-*/
-
 int main(int argc, char** argv) {
 
     MPI_Init(&argc, &argv);
@@ -34,7 +28,7 @@ int main(int argc, char** argv) {
     int frames = atoi(argv[5]);
     
     if(rank == 0) 
-        printf("Rendering %dx%d at %d fps for %d frames\n", width, height, fps, frames);
+        printf("[MASTER]:\tRendering %dx%d at %d fps for %d frames\n", width, height, fps, frames);
     
     render(rank, size, shader_name, width, height, fps, frames);
     if(frames > 1 && rank == 0)

@@ -1,5 +1,8 @@
 np?=4
-ARGS?=sdf_0 1920 1080 30 30
+
+SHADER?=sdf_0
+ARGS?=$(SHADER) 1920 1080 30 30
+
 OUTPUT=renderizador
 CC=mpicc
 CFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11  -g
