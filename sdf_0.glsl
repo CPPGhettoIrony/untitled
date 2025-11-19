@@ -844,7 +844,7 @@ Hit scene(vec3 p);
 
 Hit Operator(vec3 p){
 	
-    float t = u_time*0.01;
+    float t = u_time*0.001;
     Hit sph, oct;
 
 	sph = sphere(p, vec3(sin(t), 1, 0.0), 0.5,  1u);

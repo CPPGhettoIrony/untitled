@@ -19,6 +19,8 @@ void sendImage(Image* img, int id, int num, int width, int height) {
     
     unsigned char* data = (unsigned char*)img->data;
     
+    
+
     // The image should be sliceWidth x height, not full width
     // Send each row of the slice
     for(int row = 0; row < height; row++) {
