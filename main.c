@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     render(rank, size, shader_name, width, height, fps, frames);
     if(frames > 1 && rank == 0)
         get_video(shader_name, fps, frames);
-    
+
     MPI_Finalize();
     return 0;
 }
