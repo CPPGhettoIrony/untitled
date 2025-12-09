@@ -26,4 +26,7 @@ clean:
 	rm *.mp4
 
 run: $(OUTPUT)
+	mpirun -np $(np) $(OUTPUT) $(ARGS)
+
+run_cluster: $(OUTPUT)
 	mpirun --hostfile $(hostfile) -np $(np) $(OUTPUT) $(ARGS)
