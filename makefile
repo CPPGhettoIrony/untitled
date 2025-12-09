@@ -1,9 +1,10 @@
 np?=4
+hostfile=./hostfile.txt
 
 SHADER?=sdf_0
 ARGS?=$(SHADER) 1920 1080 30 30
-
 OUTPUT=renderizador
+
 CC=mpicc
 CFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11  -g
 LDFLAGS=-lraylib -lm -ldl -lpthread -lGL -lX11 -g
@@ -25,4 +26,4 @@ clean:
 	rm *.mp4
 
 run: $(OUTPUT)
-	mpirun -np $(np) $(OUTPUT) $(ARGS)
+	mpirun --hostfile $(hostfile) -np $(np) $(OUTPUT) $(ARGS)
