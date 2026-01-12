@@ -2,7 +2,7 @@ np?=4
 hostfile=./hostfile.txt
 
 SHADER?=sdf_0
-ARGS?=$(SHADER) 1920 1080 30 30
+ARGS?=$(SHADER) 1920 1080 30 300
 OUTPUT=renderizador
 
 CC=mpicc
